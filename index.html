@@ -1,0 +1,201 @@
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE11"/>
+    <link rel="stylesheet" href="reveal.js/css/reveal.css">
+    <link rel="stylesheet" href="reveal.js/css/theme/moon.css">
+    <!--<link rel="stylesheet" href="css/theme/moon.css">-->
+    <link rel="stylesheet" href="reveal.js/lib/css/zenburn.css" />
+    <link rel="stylesheet" href="reveal.js/css/custom-gc.css" />
+    <!--<link rel="stylesheet" href="css/additional.css">-->
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+      
+      <section>
+	<h2>Unbiased simulation of scalar diffusion bridges with distant end-points</h2>
+	<p>
+	  <small>Joint work by <a href="http://mmider.github.io">Marcin Mider$^*$</a>, <a href="https://warwick.ac.uk/fac/sci/statistics/staff/academic-research/jenkins/">Paul Jenkins$^*$</a>, <a href="https://warwick.ac.uk/fac/sci/statistics/staff/academic-research/pollock/">Murray Pollock$^*$</a>, <a href="https://warwick.ac.uk/fac/sci/statistics/staff/academic-research/roberts/">Gareth Roberts$^*$</a> and <a href="http://web.math.ku.dk/~michael/">Michael S&oslash;rensen$^{\Box}$</a></small>
+	</p>
+	<p><small>$^*$Univeristy of Warwick, Coventry, UK</small></p>
+	<p><small>$^{\Box}$University of Copenhagen, Copenhagen, Denmark</small></p>
+      </section>
+      <section>
+	<div class="no-margin-top" style="position: absolute; top: 250px; left: 300px">
+	  <h2>Background</h2>
+	</div>
+      </section>
+      
+      <section>
+	<h3>Diffusions</h3>
+	<p>$X_t$ - stochastic process solving SDE:</p>
+	<p>$$dX_t=b(X_t)dt+\sigma(X_t)dW_t,\quad X_0=x_0,\quad t\in[0,T].$$</p>
+	<p>Heuristically: $X_{t+\Delta}-X_{t}\approx\mathcal{N}(b(X_t)\Delta,\sigma(X_t)\Delta)$.</p>
+	<p>Additionally condition on $X_T=x_T$</p>
+	<img src="d3-fig/brownian_bridges.svg" alt="Brownian Bridges" style="position: absolute; top: 300px; left: 0px">
+      </section>
+
+      <section>
+	<div class="no-margin-top" style="position: absolute; top: 250px; left: 300px">
+	  <h2>Motivation</h2>
+	</div>
+      </section>
+      <section>
+	<h3>Imputation schemes</h3>
+	<div class="row no-margin-top">
+	  <div class="col-30">
+	    <p>Model of the form:</p>
+	    <p>$dX_t=b_{\theta}(X_t)dt+\sigma_{\theta}(X_t)dW_t,$</p>
+	    <p>$\qquad\qquad t\in[0,T]$</p>
+	    <p>Available discrete time observations $\mathcal{D}:=\{X_{t_i}\}_{i=0}^{N}$</p>
+	    <p>Interested in inference for $\theta$</p>
+	  </div>
+	  <div class="col-70 fig-container no-margin-top" data-file="d3-fig/gibbs.html"></div>
+	</div>
+      </section>
+
+      <section>
+	<h3>Bayesian Fusion</h3>
+	<p>Unbiased combination of results from several MCMC chains run in a distributed computing environment</p>
+      </section>
+
+
+      <section>
+	<h3>The problem:</h3>
+	<p class="fragment">Technique for sampling diffusion bridges</p>
+	<p class="fragment">Needs to be unbiased</p>
+	<p class="fragment">Needs to scale to bridges with distant end-points (large $T$)</p>
+	<p class="fragment">Allow for dependent samples (MCMC for paths)</p>
+      </section>
+
+      <section>
+	<h3>The idea</h3>
+	<p class="fragment">Use an existing sampler - Simple Diffusion Bridges (Bladt and S&oslash;rensen [2014])</p>
+	<p class="fragment">Substitute all steps introducing discretisation error with exact protocols</p>
+	<p class="fragment">Output: MCMC sampler for diffusion bridges, with invariant measure of a target diffusion bridge and no discretisation error!</p>
+      </section>
+      
+      <section>
+	<h3>Idealised Simple Diffusion Bridges</h3>
+	<div class="row no-margin-top">
+	  <div>
+	    <p><font color="#3DABB2">$dX^{(1)}_t=\alpha_{\theta}(X^{(1)}_t)dt+dW_t$, $X_0^{(1)}=x_0$</font> <font color="#F86942">$\quad dX^{(2)}_t=\alpha_{\theta}(X^{(2)}_t)dt+dW_t$, $X_0^{(2)}=x_T$</font></p>
+	    <div class="fig-container no-margin-top" data-file="d3-fig/proposal_simple.html">
+	    </div>
+      </section>
+      <section>
+	<h3>Connection with the target law</h3>
+	<img src="d3-fig/law_connection.svg" alt="Law connection">
+	<p><center><font color="#dd1c77">$dX_t=\alpha_{\theta}(X_t)dt+dW_t$, $t\in[0,T]$, $X_0=x_0$, $X_T=x_T$</font></center></p>
+	  <p><center><font color="#c994c7">$\quad dX^{(3)}_t=\alpha_{\theta}(X^{(3)}_t)dt+dW_t$, $t\in[0,T]$, $X_{-T}^{(3)}=x_T$</font></center></p>
+      </section>
+      <section>
+	<h3>Define Markov Chain:</h3>
+	<p>Proposals $\sim\unicode{x211A}$</p>
+	<p>Accept with probability: $$\frac{\frac{d\unicode{x2119}}{d\unicode{x211A}}(X^{(prop)})}{\frac{d\unicode{x2119}}{d\unicode{x211A}}(X^{(old)})}\wedge 1=\frac{1/\pi(X^{(prop)})}{1/\pi(X^{(old)})}\wedge 1$$</p>
+	<p>Where $\pi(X)$ - probability that $X$ is intersected by an auxiliary diffusion</p>
+	<p>Pseudo-marginal (Andrieu and Roberts [2009])</p>
+	<p>$\unicode{x1D59F}^{(prop)}$ - unbiased estimate for $1/\pi(X^{(prop)})$</p>
+	<p>Sample $(X^{(prop)},\unicode{x1D59F}^{(prop)})$ and accept with probability $\unicode{x1D59F}^{(prop)}/\unicode{x1D59F}^{(old)}\wedge 1$</p>
+      </section>
+      <section>
+	<h3>How to sample $\unicode{x1D59F}^{(prop)}$?</h3>
+	<div class="row no-margin-top">
+          <div class="fig-container no-margin-top" data-file="d3-fig/aux_sampler.html">
+	  </div>
+	</div>
+	<div class="no-margin-top" style="position: absolute; top: 450px">
+	  <p>Consider sequence of coin tosses: $U_i$, $i\in\unicode{x2115}_+$, $\unicode{x2119}(U_i=1)=\pi(X^{(prop)})$</p>
+	  <p>$\unicode{x1D59F}^{(prop)}:=\inf\{i:U_i=1\}$</p>
+	  <p>$\unicode{x1D59F}^{(prop)}\sim Geom(\pi(X^{(prop)}))$</p>
+	  <p>So non-negative, unbiased estimate of $1/\pi(X^{(prop)})$</p>
+	</div>
+      </section>
+      
+      <section>
+	<section>
+	  <h3>Numerical Example</h3>
+	  <p>$dX_t=\frac{1}{2}\nabla\log\left[\left( 1+\frac{X_t^2}{v} \right)^{-\frac{v+1}{2}}\right]dt+dW_t,\quad t\in[0,T]$</p>
+	  <p>Invariant distribution - t distribution</p>
+	</section>
+	<section>
+	  <h3>Bias comparison</h3>
+	<img src="d3-fig/bias_red.png" alt="Bias Reduction">
+	</section>
+	<section>
+	  <h3>Typical paths</h3>
+	  <img class="col-60" src="d3-fig/paths.png" alt="Paths">
+	</section>
+	<section>
+	  <h3>Comparison of Computational Cost</h3>
+	  <img src="d3-fig/timing.png" alt="Computational Cost">
+	</section>
+      </section>
+      <section>
+	<div style="position: absolute; width:80%; left: 100px; top: 250px; font-size: 80">
+          Thank you for your attention!
+	</div>
+      </section>
+      
+</div> <!-- slides -->
+</div> <!-- Reveal -->
+
+<script src="reveal.js/lib/js/head.min.js"></script>
+<script src="reveal.js/js/reveal.js"></script>
+<script>
+
+// Full list of configuration options available at:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+    math: {
+        mathjax: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js',
+        config: 'TeX-AMS_HTML-full'  // See http://docs.mathjax.org/en/latest/config-files.html
+    },
+    controls: true,
+    progress: true,
+    history: true,
+    center: false,
+    transition: 'slide',
+
+    // // optional configurations for reveald3
+    reveald3: {
+
+         // If the previous slide is a slide further in the deck (i.e. we come back to
+         // slide from the next slide), by default the last fragment transition will be
+         // triggered to to get the last state of the visualization and simulate the
+         // the state the simulation was in when we left the slide. This can be
+         // discarded.
+         runLastState: true, //default true
+
+         // Specifies if iframes (that host the visualization) have to be kept
+         // on the slide once the slide is not active anymore (e.g.: navigating
+         // to next slide). If true, the current visualization will be kept
+         // active so that its state will be the one displayed if we navigate
+         // back to the slide. This is false by default, as it can be the source
+         // of performance issues if complex visualizations (e.g. force layout)
+         // are displayed and kept in the background.
+         // Also, see the runLastState option as a simpler less
+         // resource-demanding alternative.
+         keepIframe: false, // default: false
+
+
+         // This will prefix the path attributes of the source html paths with the given path.
+         // (by default "src" if set to true or with the specified path if string)
+         mapPath: false, // default: false
+
+         // If true, will try to locate the file at a fallback url without the mapPath prefix in case no file is found
+         // at the stipulated url with mapPath
+         tryFallbackURL: false, //default false
+    },
+
+    // Reveal.js plugins
+    dependencies: [
+        { src: 'plugin/math/math.js', async: true },
+        { src: 'reveald3.js' },
+
+    ]
+});
+
+</script>
+</body>
+</html>

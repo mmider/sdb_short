@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src="js/d3.v4.min.js"></script>
+    <script type="text/javascript" src="../json/problem_formulation_0.js"></script>
+    <script type="text/javascript" src="../json/problem_formulation_1.js"></script>
+    <meta charset="utf-8">
+    
+    <style type="text/css">
+      .axis path,
+      .axis line{
+      fill: none;
+      stroke: black;
+      shape-rendering: crispEdges;
+      }
+      .axis text {
+      font-family: sans-serif;
+      font-size: 11px;
+      }
+      .line {
+      fill: none;
+      stroke: orange;
+      shape-rendering: crispEdges;
+      }
+      .svg-container {
+      display: block;
+      margin: auto;
+      position: relative;
+      width: 100%;
+      padding-bottom: 100%; /* aspect ratio */
+      vertical-align: middle;
+      overflow: hidden;
+      }
+      .svg-content-responsive {
+      display: block;
+      position: absolute;
+      top: 10px;
+      left: 0;
+      }
+    </style>
+  </head>
+  <div class="plot_canvas">
+  </div>
+  <body>
+    <script>
+    
+    var t0 = 0.0;
+    var T = 10.0;
+    
+    var margin = {top: 0, right: 20, bottom: 20, left: 40}
+    var w = 900 - margin.left - margin.right;
+    var h = 400 - margin.top - margin.bottom;
+    
+    // add path
+    var line = d3.line()
+    .x(function(d) { return xScale(d.time); })
+    .y(function(d) { return yScale(d.path); });
+
+    var xScale = d3.scaleLinear()
+    .domain([t0, T])
+    .range([margin.left, w]);
+    
+    var yScale = d3.scaleLinear()
+    .domain([d3.min(full_path, function(d) { return d.path;}),
+    d3.max(full_path, function(d) { return d.path;})])
+    .range([h, margin.bottom]);
+
+    // create svg objects
+    var svg = d3.select(".plot_canvas")
+    .classed("svg-container", true)
+    .append("svg")
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("viewBox", "0 0 " + String(w + margin.left + margin.right) + " " + String(h + margin.top + margin.bottom))
+    .classed("svg-content-responsive", true);
+
+    path = svg.append("path")
+    .attr("class", "line")
+    .attr("stroke", "orange")
+    .attr("opacity", 0.5)
+    .attr("d", line(full_path));
+    
+    var totalLength = path.node().getTotalLength();
+    
+    path.attr("stroke-dasharray", totalLength + " " + totalLength).attr("stroke-dashoffset", totalLength)
+    .transition(0)
+    .delay(0 * 250)
+    .duration(425)
+    .attr("stroke-dashoffset",0)
+    .transition(0)
+    .style("stroke", "steelblue")
+    .style("opacity", 1.0)
+    .attr("stroke-dasharray", null)
+    .attr("stroke-dashoffset", null);
+
+    obs_out = svg.append("g");
+    obs_in = svg.append("g");
+
+    obs_out.selectAll("circle")
+    .data(thinned_path).enter()
+    .append("circle")
+    .attr("cx", function (d) { return xScale(d.time); })
+    .attr("cy", function (d) { return yScale(d.path); })
+    .attr("r", "8px")
+    .attr("fill", "steelblue")
+    .attr("opacity", 0);
+
+    obs_in.selectAll("circle")
+    .data(thinned_path).enter()
+    .append("circle")
+    .attr("cx", function (d) { return xScale(d.time); })
+    .attr("cy", function (d) { return yScale(d.path); })
+    .attr("r", "6px")
+    .attr("fill", "orange")
+    .attr("opacity", 0);
+
+    svg.on("click", function(d) {
+    obs_out.selectAll("circle").transition(1).duration(1000).attr("opacity", 1.0);
+    obs_in.selectAll("circle").transition(2).duration(1000).attr("opacity", 1.0);
+    path.transition(3).delay(3000).duration(1000).style("opacity", 0.0);
+    });
+  
+    
+  </script>
+</body>

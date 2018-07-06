@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src="js/d3.v4.min.js"></script>
+    <script type="text/javascript" src="../json/sdb_aux.js"></script><!--var sdb_paths-->
+    <style type="text/css">
+      .axis path,
+      .axis line{
+      fill: none;
+      stroke: black;
+      shape-rendering: crispEdges;
+      }
+      .axis text {
+      font-family: sans-serif;
+      font-size: 11px;
+      }
+      .line {
+      fill: none;
+      shape-rendering: crispEdges;
+      }
+      .bar rect {
+      fill: steelblue;
+      }
+      .axisColoured line{
+      stroke: orange;
+      }
+      .axisColoured path{
+      stroke: orange;
+      }
+      .axisColoured text{
+      fill: orange;
+      }
+      .svg-container {
+      display: block;
+      margin: auto;
+      position: relative;
+      //width: 100vh;
+      height: 100%;
+      max-width: 100vh;
+      max-height 100vh;
+      padding-bottom: 100%; /* aspect ratio */
+      vertical-align: middle;
+      horizontal-align: middle;
+      overflow: hidden;
+      }
+      .svg-content-responsive {
+      display: inline-block;
+      position: absolute;
+      height: 100%;
+      width: 100%;
+      top: 10px;
+      left: 0;
+      }
+      
+    </style>
+  </head>
+  <div class="plot_canvas">
+  </div>
+  <body>
+    <script>
+      
+      var t0 = 0.0;
+      var T = 2.0;
+      var col_violet = "#352245"
+      var col_white = "#FFFFFF"
+      var col_orange = "#F86942"
+      var col_blue = "#3DABB2"
+      
+      var margin = {top: 0, right: 20, bottom: 20, left: 40}
+      var width = 900;
+      var height = 400;
+      var w = width - margin.left - margin.right;
+      var h = height - margin.top - margin.bottom;
+      
+      // add path
+      var line = d3.line()
+      .x(function(d) { return xScale(d.time); })
+      .y(function(d) { return yScale(d.path); });
+      
+      var M = Object.keys(sdb_paths).length;
+      
+      var xScale = d3.scaleLinear()
+      .domain([t0, T])
+      .range([margin.left, w]);
+      
+      var yScale = d3.scaleLinear()
+      .domain([d3.min(sdb_paths, function(d) { return d3.min(d, function(d2){ return d2.path;}); }),
+      d3.max(sdb_paths, function(d) { return d3.max(d, function(d2){return d2.path;}); })])
+      .range([h, margin.bottom]);
+      
+      var yAxis = d3.axisLeft()
+      .scale(yScale)
+      .ticks(6);
+
+      // create svg objects
+      var svg = d3.select(".plot_canvas")
+      .classed("svg-container", true)
+      .append("svg")
+      .attr("preserveAspectRatio", "xMinYMin meet")
+      .attr("viewBox", "0 0 " + String(w + margin.left + margin.right) + " " + String(h + margin.top + margin.bottom))
+      .classed("svg-content-responsive", true);
+
+      target = svg.append("g");
+      pathA = svg.append("g");
+      pathB = svg.append("g");
+      pathC = svg.append("g");
+      pathD = svg.append("g");
+      x0 = svg.append("g");
+      xT = svg.append("g");
+      x0_transf = svg.append("g");
+      tau = svg.append("g");
+
+
+      var field = svg.selectAll(".field")
+      .data(sdb_paths[7])
+      .enter().append("g")
+      .attr("transform", function(d, i) { return "translate(" + 0.5 / 6.5 * width + "," + height / 6 + ")"; })
+      .attr("class", "field");
+
+      var label = field.append("text")
+      .attr("class", "label")
+      .attr("dy", ".35em")
+      .attr("fill", col_orange)
+      .attr("font-size", 80);
+      label
+      .text(function(d) { return "0"; });
+
+      x0.selectAll("circle")
+      .data(sdb_paths[5]).enter()
+      .append("circle")
+      .attr("cx", function (d) { return xScale(d.time); })
+      .attr("cy", function (d) { return yScale(d.path); })
+      .attr("r", "8px")
+      .attr("fill", "steelblue")
+      .attr("opacity", 1);
+
+      xT.selectAll("circle")
+      .data(sdb_paths[6]).enter()
+      .append("circle")
+      .attr("cx", function (d) { return xScale(d.time); })
+      .attr("cy", function (d) { return yScale(d.path); })
+      .attr("r", "8px")
+      .attr("fill", "steelblue")
+      .attr("opacity", 1);
+
+      x0_transf.selectAll("circle")
+      .data(sdb_paths[7]).enter()
+      .append("circle")
+      .attr("cx", function (d) { return xScale(d.time); })
+      .attr("cy", function (d) { return yScale(d.path); })
+      .attr("r", "8px")
+      .attr("fill", "orange")
+      .attr("opacity", 1);
+
+      tau.selectAll("circle")
+      .data(sdb_paths[8]).enter()
+      .append("circle")
+      .attr("cx", function (d) { return xScale(d.time); })
+      .attr("cy", function (d) { return yScale(d.path); })
+      .attr("r", "42px")
+      .attr("fill", "steelblue")
+      .attr("opacity", 0.0);
+
+      target.append("path")
+      .attr("class", "line")
+      .attr("stroke", col_blue)
+      .attr("opacity", 1.0)
+      .attr("stroke-width", 3)
+      .attr("d", line(sdb_paths[0]));
+      
+      pathA.append("path")
+      .attr("class", "line")
+      .attr("stroke", "orange")
+      .attr("opacity", 0.5)
+      .attr("stroke-width", 3)
+      .attr("d", line(sdb_paths[1]));
+      totalLength = pathA.selectAll("path").node().getTotalLength();
+      pathA.selectAll("path")
+      .attr("stroke-dasharray", totalLength + " " + totalLength)
+      .attr("stroke-dashoffset", totalLength);
+      
+      pathB.append("path")
+      .attr("class", "line")
+      .attr("stroke", "orange")
+      .attr("opacity", 0.5)
+      .attr("stroke-width", 3)
+      .attr("d", line(sdb_paths[2]));
+      totalLength = pathB.selectAll("path").node().getTotalLength();
+      pathB.selectAll("path")
+      .attr("stroke-dasharray", totalLength + " " + totalLength)
+      .attr("stroke-dashoffset", totalLength);
+
+      pathC.append("path")
+      .attr("class", "line")
+      .attr("stroke", "orange")
+      .attr("opacity", 0.5)
+      .attr("stroke-width", 3)
+      .attr("d", line(sdb_paths[3]));
+      totalLength = pathC.selectAll("path").node().getTotalLength();
+      pathC.selectAll("path")
+      .attr("stroke-dasharray", totalLength + " " + totalLength)
+      .attr("stroke-dashoffset", totalLength);
+
+      pathD.append("path")
+      .attr("class", "line")
+      .attr("stroke", "orange")
+      .attr("opacity", 0.5)
+      .attr("stroke-width", 3)
+      .attr("d", line(sdb_paths[4]));
+      totalLength = pathD.selectAll("path").node().getTotalLength();
+      pathD.selectAll("path")
+      .attr("stroke-dasharray", totalLength + " " + totalLength)
+      .attr("stroke-dashoffset", totalLength);
+
+      
+      
+      var dur1 = 3000;
+      var dur2 = 500
+      var break1 = 1000;
+      
+      function render (idx=0){
+      if (idx == 0){
+      } else{
+
+      pathA.selectAll("path").transition(0)
+      .duration(dur1)
+      .attr("stroke-dashoffset",0)
+      .transition(0)
+      .attr("stroke", col_orange)
+      .attr("opacity", 1.0)
+      .attr("stroke-dasharray", null)
+      .attr("stroke-dashoffset", null)
+      .transition(0)
+      .delay(dur2)
+      .duration(dur1)
+      .attr("opacity", 0.0);
+
+      label
+      .transition(2)
+      .delay(2*dur1)
+      .text(function(d) { return "1"; })
+      .transition(2)
+      .delay(2*dur1)
+      .text(function(d) { return "2"; })
+      .transition(2)
+      .delay(2*dur1+break1)
+      .text(function(d) { return "3"; })
+      .transition(2)
+      .delay(dur1+break1)
+      .text(function(d) { return "4"; })
+      .transition(2)
+      .delay(dur1+2*break1)
+      .attr("fill", "green");
+
+      pathB.selectAll("path").transition(0)
+      .delay(dur1*2+break1)
+      .duration(dur1)
+      .attr("stroke-dashoffset",0)
+      .transition(0)
+      .attr("stroke", col_orange)
+      .attr("opacity", 1.0)
+      .attr("stroke-dasharray", null)
+      .attr("stroke-dashoffset", null)
+      .transition(0)
+      .duration(dur1)
+      .delay(dur2)
+      .attr("opacity", 0.0);
+
+      pathC.selectAll("path").transition(0)
+      .delay(dur1*4+break1*2)
+      .duration(dur1)
+      .attr("stroke-dashoffset",0)
+      .transition(0)
+      .attr("stroke", col_orange)
+      .attr("opacity", 1.0)
+      .attr("stroke-dasharray", null)
+      .attr("stroke-dashoffset", null)
+      .transition(0)
+      .duration(dur1)
+      .delay(dur2)
+      .attr("opacity", 0.0);
+
+      pathD.selectAll("path").transition(0)
+      .delay(dur1*6+break1*3)
+      .duration(dur1)
+      .attr("stroke-dashoffset",0)
+      .transition(0)
+      .delay(dur1+2*break1)
+      .attr("stroke", "green")
+      .attr("opacity", 1.0)
+      .attr("stroke-dasharray", null)
+      .attr("stroke-dashoffset", null);
+
+      tau.selectAll("circle")
+      .transition(1)
+      .delay(7*dur1+4*break1)
+      .duration(dur1)
+      .attr("r", "6px")
+      .attr("fill", "white")
+      .attr("opacity", 1.0);
+      }
+
+      }
+
+render(0);
+
+var _transitions = [
+      {
+      transitionForward: () => render(1),
+      transitionBackward: () => render(0),
+      index: 0
+      },
+      {
+      transitionForward: () => render(1),
+      index: 1
+      },
+      ]
+			 </script>
+  </body>

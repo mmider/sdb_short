@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src="js/d3.v4.min.js"></script>
+    <script type="text/javascript" src="../json/gibbs_sampler_0.js"></script>
+    <script type="text/javascript" src="../json/gibbs_sampler_1.js"></script>
+    <script type="text/javascript" src="../json/gibbs_sampler_2.js"></script>
+    <style type="text/css">
+      .axis path,
+      .axis line{
+      fill: none;
+      stroke: black;
+      shape-rendering: crispEdges;
+      }
+      .axis text {
+      font-family: sans-serif;
+      font-size: 11px;
+      }
+      .line {
+      fill: none;
+      stroke: orange;
+      shape-rendering: crispEdges;
+      }
+      .bar rect {
+      fill: #F86942;
+      }
+      .axisColoured line{
+      stroke: orange;
+      }
+      .axisColoured path{
+      stroke: orange;
+      }
+      .axisColoured text{
+      fill: orange;
+      }
+      .svg-container {
+      display: block;
+      margin: auto;
+      position: relative;
+      //width: 100vh;
+      height: 100%;
+      max-width: 100vh;
+      max-height 100vh;
+      padding-bottom: 100%; /* aspect ratio */
+      vertical-align: middle;
+      horizontal-align: middle;
+      overflow: hidden;
+      }
+      .svg-content-responsive {
+      display: inline-block;
+      position: absolute;
+      height: 100%;
+      width: 100%;
+      top: 10px;
+      left: 0;
+      }
+      
+    </style>
+  </head>
+  <div class="plot_canvas">
+  </div>
+  <body>
+    <script>
+      
+      var t0 = 0.0;
+      var T = 10.0;
+      
+      var margin = {top: 0, right: 20, bottom: 20, left: 40}
+      var width = 900;
+      var height = 400;
+      var w = width - margin.left - margin.right;
+      var h = height - margin.top - margin.bottom;
+      var w2 = 0.6*(width - 2*margin.left - 2*margin.right);
+      var h2 = (height - 2*margin.top - 2*margin.bottom);
+      var w3 = 0.4*(width - 2*margin.left - 2*margin.right);
+      var h3 = h2;
+      
+      // add path
+      var line = d3.line()
+      .x(function(d) { return xScale(d.time); })
+      .y(function(d) { return yScale(d.path); });
+      
+      var lineTheta = d3.line()
+      .x(function(d) { return xScaleTheta(d.index); })
+      .y(function(d) { return yScaleTheta(d.value); });
+
+      var M = Object.keys(imputations).length;
+      
+      var xScale = d3.scaleLinear()
+      .domain([t0, T])
+      .range([margin.left, w]);
+      
+      var yScale = d3.scaleLinear()
+      .domain([d3.min(imputations, function(d) { return d3.min(d.value, function(d2){ return d2.path;}); }),
+      d3.max(imputations, function(d) { return d3.max(d.value, function(d2){return d2.path;}); })])
+      .range([h, margin.bottom]);
+
+
+      var xScaleTheta = d3.scaleLinear()
+      .domain([0, M])
+      .range([margin.left, w2]);
+      
+      var yScaleTheta = d3.scaleLinear()
+      .domain([d3.min(theta_chain, function(d) { return d.value;} ),
+      d3.max(theta_chain, function(d) { return d.value;})])
+      .range([h2, margin.bottom]);
+      
+      var yAxis = d3.axisLeft()
+      .scale(yScaleTheta)
+      .ticks(6);
+
+      // create svg objects
+      var svg_master = d3.select(".plot_canvas")
+      .classed("svg-container", true)
+      .append("svg")
+      .attr("preserveAspectRatio", "xMinYMin meet")
+      .attr("viewBox", "0 0 " + String(w + margin.left + margin.right) + " " + String(2*(h + margin.top + margin.bottom)))
+      .classed("svg-content-responsive", true);
+
+      var svg = svg_master.append("svg")
+      .attr("width", w + margin.left + margin.right)
+      .attr("height", h + margin.top + margin.bottom);
+      
+      var svg2 = svg_master
+      .append("svg")
+      .attr("y", h + margin.top + margin.bottom)
+      .attr("width", w2 + margin.left + margin.right)
+      .attr("height", h2 + margin.top + margin.bottom);
+
+      var svg3 = svg_master
+      .append("svg")
+      .attr("y", h + margin.top + margin.bottom)
+      .attr("x", 0.6*(w + margin.left + margin.right))
+      .attr("width", w3 + margin.left + margin.right)
+      .attr("height", h3 + margin.top + margin.bottom);
+
+      paths = svg.append("g");
+      obs_out = svg.append("g");
+      obs_in = svg.append("g");
+      
+      obs_out.selectAll("circle")
+      .data(gibbs_obs).enter()
+      .append("circle")
+      .attr("cx", function (d) { return xScale(d.time); })
+      .attr("cy", function (d) { return yScale(d.path); })
+      .attr("r", "12px")
+      .attr("fill", "steelblue")
+      .attr("opacity", 1);
+
+      obs_in.selectAll("circle")
+      .data(gibbs_obs).enter()
+      .append("circle")
+      .attr("cx", function (d) { return xScale(d.time); })
+      .attr("cy", function (d) { return yScale(d.path); })
+      .attr("r", "8px")
+      .attr("fill", "orange")
+      .attr("opacity", 1);
+
+      path = paths.append("path")
+      .attr("class", "line")
+      .attr("stroke", "orange")
+      .attr("opacity", 0.7)
+      .attr("stroke-width", 3)
+      .attr("d", line(imputations[0].value));
+
+      svg2.append("g")
+      .attr("class", "y axis")
+      .attr("transform", "translate(" + margin.left + ",0)")
+      .call(yAxis)
+      .attr("class", "axisColoured");
+
+      svg3.append("g")
+      .attr("class", "y axis")
+      .attr("transform", "translate(" + margin.left + ",0)")
+      .call(yAxis)
+      .attr("class", "axisColoured");
+
+      theta_trace = svg2.append("path");
+      thetas = svg2.append("g");
+
+      theta_trace.attr("class", "line")
+      .attr("stroke-width", 2)
+      .attr("opacity", 0.5)
+      .attr("d", lineTheta(theta_chain.slice(0,0)));
+
+      thetas.append("circle")
+      .attr("cx", xScaleTheta(theta_chain[0].index))
+      .attr("cy", yScaleTheta(theta_chain[0].value))
+      .attr("r", "10px")
+      .attr("fill", "#F86942")
+      .attr("opacity", 1);
+      
+
+      var theta_array = theta_chain.map(function(d){return d.value;});
+
+      var bins = d3.histogram()
+      .domain(yScaleTheta.domain())
+      .thresholds(yScaleTheta.ticks(10))
+      (theta_array.slice(0,1));
+
+      var xScaleThetaBins = d3.scaleLinear()
+      .domain([0, d3.max(bins, function(d) { return d.length; })])
+      .range([margin.left, w3]);
+      
+      console.log(bins);
+      var bar = svg3.selectAll(".bar")
+      .data(bins)
+      .enter().append("g")
+      .attr("class", "bar")
+      .attr("transform", function(d, i) {return "translate("+margin.left+","+  yScaleTheta(0.5*(d.x0+d.x1)) + ")";});
+      
+      var rects = bar.append("rect")
+      .attr("x", 1)
+      .attr("height", 4*(yScaleTheta(bins[0].x0) - yScaleTheta(bins[0].x1)))
+      .attr("width", function(d) { return xScaleThetaBins(d.length)- margin.left;});
+
+      var trans_length = 2000;
+      for (var i=1; i<M; i++)
+			 {
+			 var bins = d3.histogram()
+			 .domain(yScaleTheta.domain())
+			 .thresholds(yScaleTheta.ticks(10))
+			 (theta_array.slice(0,i+1));
+			 
+			 var xScaleThetaBins = d3.scaleLinear()
+			 .domain([0, d3.max(bins, function(d) { return d.length; })])
+			 .range([margin.left, w3]);
+
+			 rects = svg3.selectAll("rect")
+			 .data(bins);
+
+			 rects.exit().remove();
+			 rects.enter().append("rect").merge(rects)
+			 .transition(i)
+			 .delay(trans_length*(i+0.5))
+			 .attr("height", 4*(yScaleTheta(bins[0].x0) - yScaleTheta(bins[0].x1)))
+			 .attr("width", function(d) { return xScaleThetaBins(d.length)- margin.left;});		     
+			 
+			 path.transition(i)
+			 .delay(i*trans_length)
+			 .duration(0.5*trans_length)
+			 .attr("d", line(imputations[i].value));
+
+			 thetas.append("circle").transition(i).delay((i+0.5)*trans_length)
+			 .attr("cx", xScaleTheta(theta_chain[i].index))
+			 .attr("cy", yScaleTheta(theta_chain[i].value))
+			 .attr("r", "10px")
+			 .attr("fill", "#F86942")
+			 .attr("opacity", 1);
+
+			 theta_trace.transition(i)
+			 .delay((i+0.5)*trans_length)
+			 .duration(0.5*trans_length)
+			 .attr("d", lineTheta(theta_chain.slice(0,i+1)));
+			 
+			 }
+			 
+			 </script>
+  </body>
