@@ -80,44 +80,45 @@
 	<p class="fragment">Substitute all steps introducing discretisation error with exact protocols</p>
 	<p class="fragment">Output: MCMC sampler for diffusion bridges, with invariant measure of a target diffusion bridge and no discretisation error!</p>
       </section>
-      
+
       <section>
-	<h3>Idealised Simple Diffusion Bridges</h3>
-	<div class="row no-margin-top">
-	  <div>
-	    <p><font color="#3DABB2">$dX^{(1)}_t=\alpha_{\theta}(X^{(1)}_t)dt+dW_t$, $X_0^{(1)}=x_0$</font> <font color="#F86942">$\quad dX^{(2)}_t=\alpha_{\theta}(X^{(2)}_t)dt+dW_t$, $X_0^{(2)}=x_T$</font></p>
-	    <div class="fig-container no-margin-top" data-file="d3-fig/proposal_simple.html">
-	    </div>
-      </section>
-      <section>
-	<h3>Connection with the target law</h3>
-	<img src="d3-fig/law_connection.svg" alt="Law connection">
-	<p><center><font color="#dd1c77">$dX_t=\alpha_{\theta}(X_t)dt+dW_t$, $t\in[0,T]$, $X_0=x_0$, $X_T=x_T$</font></center></p>
+	<section>
+	  <h3>Idealised Simple Diffusion Bridges</h3>
+	  <div class="row no-margin-top">
+	    <div>
+	      <p><font color="#3DABB2">$dX^{(1)}_t=\alpha_{\theta}(X^{(1)}_t)dt+dW_t$, $X_0^{(1)}=x_0$</font> <font color="#F86942">$\quad dX^{(2)}_t=\alpha_{\theta}(X^{(2)}_t)dt+dW_t$, $X_0^{(2)}=x_T$</font></p>
+	      <div class="fig-container no-margin-top" data-file="d3-fig/proposal_simple.html">
+	      </div>
+	</section>
+	<section>
+	  <h3>Connection with the target law</h3>
+	  <img src="d3-fig/law_connection.svg" alt="Law connection">
+	  <p><center><font color="#dd1c77">$dX_t=\alpha_{\theta}(X_t)dt+dW_t$, $t\in[0,T]$, $X_0=x_0$, $X_T=x_T$</font></center></p>
 	  <p><center><font color="#c994c7">$\quad dX^{(3)}_t=\alpha_{\theta}(X^{(3)}_t)dt+dW_t$, $t\in[0,T]$, $X_{-T}^{(3)}=x_T$</font></center></p>
-      </section>
-      <section>
-	<h3>Define Markov Chain:</h3>
-	<p>Proposals $\sim\unicode{x211A}$</p>
-	<p>Accept with probability: $$\frac{\frac{d\unicode{x2119}}{d\unicode{x211A}}(X^{(prop)})}{\frac{d\unicode{x2119}}{d\unicode{x211A}}(X^{(old)})}\wedge 1=\frac{1/\pi(X^{(prop)})}{1/\pi(X^{(old)})}\wedge 1$$</p>
-	<p>Where $\pi(X)$ - probability that $X$ is intersected by an auxiliary diffusion</p>
-	<p>Pseudo-marginal (Andrieu and Roberts [2009])</p>
-	<p>$\unicode{x1D59F}^{(prop)}$ - unbiased estimate for $1/\pi(X^{(prop)})$</p>
-	<p>Sample $(X^{(prop)},\unicode{x1D59F}^{(prop)})$ and accept with probability $\unicode{x1D59F}^{(prop)}/\unicode{x1D59F}^{(old)}\wedge 1$</p>
-      </section>
-      <section>
-	<h3>How to sample $\unicode{x1D59F}^{(prop)}$?</h3>
-	<div class="row no-margin-top">
-          <div class="fig-container no-margin-top" data-file="d3-fig/aux_sampler.html">
+	</section>
+	<section>
+	  <h3>Define Markov Chain:</h3>
+	  <p>Proposals $\sim\unicode{x211A}$</p>
+	  <p>Accept with probability: $$\frac{\frac{d\unicode{x2119}}{d\unicode{x211A}}(X^{(prop)})}{\frac{d\unicode{x2119}}{d\unicode{x211A}}(X^{(old)})}\wedge 1=\frac{1/\pi(X^{(prop)})}{1/\pi(X^{(old)})}\wedge 1$$</p>
+	  <p>Where $\pi(X)$ - probability that $X$ is intersected by an auxiliary diffusion</p>
+	  <p>Pseudo-marginal (Andrieu and Roberts [2009])</p>
+	  <p>$\unicode{x1D59F}^{(prop)}$ - unbiased estimate for $1/\pi(X^{(prop)})$</p>
+	  <p>Sample $(X^{(prop)},\unicode{x1D59F}^{(prop)})$ and accept with probability $\unicode{x1D59F}^{(prop)}/\unicode{x1D59F}^{(old)}\wedge 1$</p>
+	</section>
+	<section>
+	  <h3>How to sample $\unicode{x1D59F}^{(prop)}$?</h3>
+	  <div class="row no-margin-top">
+            <div class="fig-container no-margin-top" data-file="d3-fig/aux_sampler.html">
+	    </div>
 	  </div>
-	</div>
-	<div class="no-margin-top" style="position: absolute; top: 450px">
-	  <p>Consider sequence of coin tosses: $U_i$, $i\in\unicode{x2115}_+$, $\unicode{x2119}(U_i=1)=\pi(X^{(prop)})$</p>
-	  <p>$\unicode{x1D59F}^{(prop)}:=\inf\{i:U_i=1\}$</p>
-	  <p>$\unicode{x1D59F}^{(prop)}\sim Geom(\pi(X^{(prop)}))$</p>
-	  <p>So non-negative, unbiased estimate of $1/\pi(X^{(prop)})$</p>
-	</div>
-      </section>
-      
+	  <div class="no-margin-top" style="position: absolute; top: 450px">
+	    <p>Consider sequence of coin tosses: $U_i$, $i\in\unicode{x2115}_+$, $\unicode{x2119}(U_i=1)=\pi(X^{(prop)})$</p>
+	    <p>$\unicode{x1D59F}^{(prop)}:=\inf\{i:U_i=1\}$</p>
+	    <p>$\unicode{x1D59F}^{(prop)}\sim Geom(\pi(X^{(prop)}))$</p>
+	    <p>So non-negative, unbiased estimate of $1/\pi(X^{(prop)})$</p>
+	  </div>
+	</section>
+      </section>      
       <section>
 	<section>
 	  <h3>Numerical Example</h3>
