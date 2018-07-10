@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src="js/d3.v4.min.js"></script>
+    <script src="js/venn.min.js"></script>
+    <script src="js/venn.js"></script>
+      </head>
+  <body>
+          <div id="venn"></div>
+    <script>
+      
+      var sets = [ {sets: ['Diffusion Bridges'], size: 24}, 
+      {sets: ['Scales linearly with T'], size: 24},
+      {sets: ['Unbiased'], size:24},
+      {sets: ['Diffusion Bridges','Scales linearly with T'], size: 4},
+      {sets: ['Diffusion Bridges','Unbiased'], size: 4},
+      {sets: ['Scales linearly with T','Unbiased'], size: 4},
+      {sets: ['Diffusion Bridges','Scales linearly with T','Unbiased'], size: 4}];
+      
+      var chart = venn.VennDiagram().height(900).width(1000).fontSize(40);
+      d3.select("#venn").datum(sets).call(chart);
+
+    </script>
+  </body>

@@ -64,23 +64,24 @@
 	<h3>The problem:</h3>
 	<p class="fragment">Technique for sampling diffusion bridges</p>
 	<p class="fragment">Needs to scale to bridges with distant end-points (large $T$)</p>
-	<p class="fragment">Needs to be unbiased</p>
+	<p class="fragment">Needs to be <mark><strong>unbiased</strong></mark></p>
 	<p class="fragment">Allow for dependent samples (MCMC for paths)</p>
-      </section>
+      </section>      
       
       <section>
 	<div class="no-margin-top" style="position: absolute; top: 250px; left: 300px">
 	  <h2>Solution</h2>
 	</div>
       </section>
-      
-      <section>
-	<h3>The idea</h3>
-	<p class="fragment">Use an existing sampler - Simple Diffusion Bridges (Bladt and S&oslash;rensen [2014])</p>
-	<p class="fragment">Substitute all steps introducing discretisation error with exact protocols</p>
-	<p class="fragment">Output: MCMC sampler for diffusion bridges, with invariant measure of a target diffusion bridge and no discretisation error!</p>
-      </section>
 
+      <section class="fig-container" data-file="d3-fig/venn.html">
+	<div class="no-margin-top" style="position: absolute; left: 500px">
+	  <p><font color="orange">Simple</font> <font color="steelblue">Diffusion</font> <font color="orange">Bridges</font> (Bladt and S&oslash;rensen [2014])</p>
+	  <p><font color="green">Path</font> <font color="steelblue">Space</font> <font color="green">Rejection</font> <font color="steelblue">Sampler</font> (Beskos et al. [2005, 2006])</p>
+	  <p><font color="green">Path</font> <font color="orange">Space</font> <font color="green">Rejection</font> <font color="orange">Sampler</font> (Beskos et al. [2005, 2006])</p>
+	</div>
+      </section>
+      
       <section>
 	<section>
 	  <h3>Idealised Simple Diffusion Bridges</h3>
